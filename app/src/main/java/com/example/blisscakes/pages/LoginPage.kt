@@ -37,7 +37,6 @@ fun LoginPage(navController: NavHostController) {
             modifier = Modifier.fillMaxSize()
         )
 
-        // Semi-transparent overlay using theme colors
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -53,7 +52,6 @@ fun LoginPage(navController: NavHostController) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Card using surface color from theme
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
@@ -65,7 +63,6 @@ fun LoginPage(navController: NavHostController) {
                     modifier = Modifier.padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Header using primary color from theme
                     Text(
                         "LOGIN",
                         style = MaterialTheme.typography.headlineLarge,
@@ -118,7 +115,6 @@ fun LoginPage(navController: NavHostController) {
                         )
                     )
 
-                    // Divider using outline color from theme
                     HorizontalDivider(
                         modifier = Modifier
                             .padding(vertical = 32.dp)
@@ -127,7 +123,7 @@ fun LoginPage(navController: NavHostController) {
                         color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
                     )
 
-                    // Login Button using primary color scheme
+                    // Login Button
                     Button(
                         onClick = {
                             focusManager.clearFocus()
@@ -147,7 +143,7 @@ fun LoginPage(navController: NavHostController) {
                         Text("LOGIN")
                     }
 
-                    // Sign up prompt using primary color
+                    // Sign up prompt
                     TextButton(
                         onClick = { navController.navigate(NavRoutes.Signup) },
                         modifier = Modifier.padding(top = 16.dp)
