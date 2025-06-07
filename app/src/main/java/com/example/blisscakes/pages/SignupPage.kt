@@ -32,15 +32,13 @@ fun SignupPage(navController: NavHostController) {
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
-        // Background Image - same as login page
+        // Background Image
         Image(
             painter = painterResource(id = R.drawable.login_bg),
             contentDescription = "Background",
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize()
         )
-
-        // Semi-transparent overlay for better text readability
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -56,7 +54,7 @@ fun SignupPage(navController: NavHostController) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // White Card for form content
+            // Form content
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
