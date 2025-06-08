@@ -27,12 +27,14 @@ fun SignupPage(navController: NavHostController) {
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+
+    var emailError by remember { mutableStateOf(false) }
+    var passwordError by remember { mutableStateOf(false) }
+
     val focusManager = LocalFocusManager.current
 
-    Box(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        // Background Image
+    Box(modifier = Modifier.fillMaxSize()) {
+        // Background
         Image(
             painter = painterResource(id = R.drawable.login_bg),
             contentDescription = "Background",
@@ -54,7 +56,6 @@ fun SignupPage(navController: NavHostController) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Form content
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
@@ -66,7 +67,6 @@ fun SignupPage(navController: NavHostController) {
                     modifier = Modifier.padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Header
                     Text(
                         "SIGN UP",
                         style = MaterialTheme.typography.headlineLarge,
@@ -74,13 +74,8 @@ fun SignupPage(navController: NavHostController) {
                         color = MaterialTheme.colorScheme.primary
                     )
 
-                    // Name Field
-                    Text(
-                        "Full Name",
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.align(Alignment.Start),
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
+                    // Full Name
+                    Text("Full Name", style = MaterialTheme.typography.titleMedium, modifier = Modifier.align(Alignment.Start), color = MaterialTheme.colorScheme.onSurface)
                     OutlinedTextField(
                         value = name,
                         onValueChange = { name = it },
@@ -95,63 +90,81 @@ fun SignupPage(navController: NavHostController) {
                         )
                     )
 
-                    // Email Field
-                    Text(
-                        "Email",
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.align(Alignment.Start),
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
+                    // Email
+                    Text("Email", style = MaterialTheme.typography.titleMedium, modifier = Modifier.align(Alignment.Start), color = MaterialTheme.colorScheme.onSurface)
                     OutlinedTextField(
                         value = email,
-                        onValueChange = { email = it },
+                        onValueChange = {
+                            email = it
+                            emailError = !it.contains("@")
+                        },
+                        isError = emailError,
                         placeholder = { Text("Enter your email") },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = 16.dp),
+                            .padding(bottom = if (emailError) 4.dp else 16.dp),
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = MaterialTheme.colorScheme.surface,
                             unfocusedContainerColor = MaterialTheme.colorScheme.surface
                         )
                     )
+                    if (emailError) {
+                        Text(
+                            text = "Please enter a valid email address.",
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier
+                                .align(Alignment.Start)
+                                .padding(bottom = 12.dp)
+                        )
+                    }
 
-                    // Password Field
-                    Text(
-                        "Password",
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.align(Alignment.Start),
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
+                    // Password
+                    Text("Password", style = MaterialTheme.typography.titleMedium, modifier = Modifier.align(Alignment.Start), color = MaterialTheme.colorScheme.onSurface)
                     OutlinedTextField(
                         value = password,
-                        onValueChange = { password = it },
+                        onValueChange = {
+                            password = it
+                            passwordError = it.length < 6
+                        },
+                        isError = passwordError,
                         placeholder = { Text("Enter your password") },
                         visualTransformation = PasswordVisualTransformation(),
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = if (passwordError) 4.dp else 0.dp),
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = MaterialTheme.colorScheme.surface,
                             unfocusedContainerColor = MaterialTheme.colorScheme.surface
                         )
                     )
+                    if (passwordError) {
+                        Text(
+                            text = "Password must be at least 6 characters.",
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier
+                                .align(Alignment.Start)
+                                .padding(bottom = 12.dp)
+                        )
+                    }
 
-                    // Divider
                     HorizontalDivider(
-                        modifier = Modifier
-                            .padding(vertical = 32.dp)
-                            .fillMaxWidth(),
+                        modifier = Modifier.padding(vertical = 32.dp).fillMaxWidth(),
                         thickness = 1.dp,
                         color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
                     )
 
-                    // Sign Up Button
                     Button(
                         onClick = {
                             focusManager.clearFocus()
-                            navController.navigate(NavRoutes.Login)
+                            if (!emailError && !passwordError && name.isNotBlank()) {
+                                navController.navigate(NavRoutes.Home)
+                            }
                         },
                         enabled = name.isNotBlank() && email.isNotBlank() && password.isNotBlank(),
                         modifier = Modifier
@@ -165,15 +178,11 @@ fun SignupPage(navController: NavHostController) {
                         Text("SIGN UP")
                     }
 
-                    // Login prompt
                     TextButton(
                         onClick = { navController.navigate(NavRoutes.Login) },
                         modifier = Modifier.padding(top = 16.dp)
                     ) {
-                        Text(
-                            "Already have an account? Login here",
-                            color = MaterialTheme.colorScheme.primary
-                        )
+                        Text("Already have an account? Login here", color = MaterialTheme.colorScheme.primary)
                     }
                 }
             }
