@@ -7,6 +7,5 @@ object NavRoutes {
     const val Login = "login"
     const val Signup = "signup"
     const val Detail = "detail"
-    const val Dashboard = "dashboard"
-    const val Summary = "summary"
+    const val Products = "products"
 }
