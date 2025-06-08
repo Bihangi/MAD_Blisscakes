@@ -3,12 +3,7 @@ package com.example.blisscakes.pages
 import android.content.res.Configuration
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.grid.*
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.AccountCircle
@@ -28,6 +23,7 @@ import com.example.blisscakes.DataClasses.Product
 import com.example.blisscakes.R
 import com.example.blisscakes.navigation.NavRoutes
 import com.example.blisscakes.components.DashboardScaffold
+import com.google.accompanist.flowlayout.FlowRow
 
 @Composable
 fun HomePage(navController: NavHostController) {
@@ -48,11 +44,12 @@ fun HomePage(navController: NavHostController) {
         Product(8, "Coffee Cake", 1300.0, "Coffee delight", R.drawable.coffee, "Classic")
     )
 
-    DashboardScaffold(navController = navController) { modifier ->
+    DashboardScaffold(navController = navController) { innerPadding ->
         Column(
-            modifier = modifier
+            modifier = Modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
+                .padding(top = innerPadding.calculateTopPadding(), bottom = innerPadding.calculateBottomPadding() + 16.dp)
                 .verticalScroll(rememberScrollState())
         ) {
             Row(
@@ -79,19 +76,86 @@ fun HomePage(navController: NavHostController) {
             Spacer(modifier = Modifier.height(if (isLandscape) 16.dp else 24.dp))
 
             ProductSection("Best Seller", bestSellers, navController, isLandscape)
-            Spacer(modifier = Modifier.height(if (isLandscape) 8.dp else 24.dp))
+
+            Spacer(modifier = Modifier.height(if (isLandscape) 24.dp else 32.dp))
+
             ProductSection("For You", forYou, navController, isLandscape)
-            Spacer(modifier = Modifier.height(if (isLandscape) 8.dp else 16.dp))
+
+            Spacer(modifier = Modifier.height(if (isLandscape) 24.dp else 32.dp))
         }
     }
 }
+
+@Composable
+fun ProductSection(
+    title: String,
+    products: List<Product>,
+    navController: NavHostController,
+    isLandscape: Boolean
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = if (isLandscape) 60.dp else 16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { navController.navigate(NavRoutes.Products) },
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = title,
+                style = if (isLandscape)
+                    MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                else
+                    MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                color = MaterialTheme.colorScheme.onSurface
+            )
+
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                contentDescription = "View all",
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(if (isLandscape) 20.dp else 24.dp)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(if (isLandscape) 12.dp else 16.dp))
+
+        if (isLandscape) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                WrapContentRow(products, navController, isLandscape)
+            }
+        } else {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                products.forEach { product ->
+                    ProductCard(product = product, navController = navController, isLandscape = false)
+                }
+            }
+        }
+    }
+}
+
 
 @Composable
 fun BannerSection(navController: NavHostController, isLandscape: Boolean) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(if (isLandscape) 140.dp else 200.dp)
+            .height(if (isLandscape) 200.dp else 200.dp)
             .padding(horizontal = 16.dp)
             .clip(RoundedCornerShape(12.dp))
     ) {
@@ -139,75 +203,23 @@ fun BannerSection(navController: NavHostController, isLandscape: Boolean) {
 }
 
 @Composable
-fun ProductSection(
-    title: String,
-    products: List<Product>,
-    navController: NavHostController,
-    isLandscape: Boolean
-) {
-    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { navController.navigate(NavRoutes.Products) },
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = title,
-                style = if (isLandscape)
-                    MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                else
-                    MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                color = MaterialTheme.colorScheme.onSurface
-            )
+fun WrapContentRow(products: List<Product>, navController: NavHostController, isLandscape: Boolean) {
+    val spacing = 12.dp
+    val cardWidth = if (isLandscape) 160.dp else 170.dp
+    val totalWidth = products.size * cardWidth.value + (products.size - 1) * spacing.value
 
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                contentDescription = "View all",
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(if (isLandscape) 20.dp else 24.dp)
-            )
-        }
-
-        Spacer(modifier = Modifier.height(if (isLandscape) 12.dp else 16.dp))
-
-        if (isLandscape) {
-            BoxWithConstraints(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp)
-            ) {
-                val columns = (this.maxWidth / 180.dp).toInt().coerceAtLeast(2) // Properly scoped
-
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(columns),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier
-                        .heightIn(min = 200.dp, max = 340.dp) // optional height cap
-                        .fillMaxWidth(),
-                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
-                ) {
-                    items(products) { product ->
-                        ProductCard(product = product, navController = navController, isLandscape = true)
-                    }
-                }
-            }
-        }
-         else {
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    contentPadding = PaddingValues(horizontal = 8.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    items(products) { product ->
-                        ProductCard(product = product, navController = navController, isLandscape = false)
-                    }
-                }
-            }
+    Row(
+        modifier = Modifier
+            .width((totalWidth).dp)
+            .wrapContentHeight(),
+        horizontalArrangement = Arrangement.spacedBy(spacing)
+    ) {
+        products.forEach { product ->
+            ProductCard(product = product, navController = navController, isLandscape = isLandscape)
         }
     }
+}
+
 
 @Composable
 fun ProductCard(product: Product, navController: NavHostController, isLandscape: Boolean) {
