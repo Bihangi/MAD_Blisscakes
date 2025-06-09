@@ -127,7 +127,7 @@ fun LoginPage(navController: NavHostController) {
                     Button(
                         onClick = {
                             focusManager.clearFocus()
-                            navController.navigate(NavRoutes.Dashboard)
+                            navController.navigate(NavRoutes.Home)
                         },
                         enabled = username.isNotBlank() && password.isNotBlank(),
                         modifier = Modifier
