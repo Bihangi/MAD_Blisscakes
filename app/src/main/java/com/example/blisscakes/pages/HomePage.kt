@@ -11,6 +11,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.*
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
@@ -23,13 +24,13 @@ import com.example.blisscakes.DataClasses.Product
 import com.example.blisscakes.R
 import com.example.blisscakes.navigation.NavRoutes
 import com.example.blisscakes.components.DashboardScaffold
-import com.google.accompanist.flowlayout.FlowRow
 
 @Composable
 fun HomePage(navController: NavHostController) {
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
+    // Sample product lists
     val bestSellers = listOf(
         Product(1, "Cake Pops", 800.0, "Best-selling dreamy cake pops", R.drawable.cake_pops, "Dessert"),
         Product(2, "Cupcakes", 600.0, "Smooth strawberry goodness", R.drawable.cupcakes1, "Classic"),
@@ -44,12 +45,16 @@ fun HomePage(navController: NavHostController) {
         Product(8, "Coffee Cake", 1300.0, "Coffee delight", R.drawable.coffee, "Classic")
     )
 
+    // Main layout with bottom navigation
     DashboardScaffold(navController = navController) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
-                .padding(top = innerPadding.calculateTopPadding(), bottom = innerPadding.calculateBottomPadding() + 16.dp)
+                .padding(
+                    top = innerPadding.calculateTopPadding(),
+                    bottom = innerPadding.calculateBottomPadding() + 16.dp
+                )
                 .verticalScroll(rememberScrollState())
         ) {
             Row(
@@ -71,14 +76,17 @@ fun HomePage(navController: NavHostController) {
                 }
             }
 
+            // Banner section
             BannerSection(navController, isLandscape)
 
             Spacer(modifier = Modifier.height(if (isLandscape) 16.dp else 24.dp))
 
+            // Best Seller products section
             ProductSection("Best Seller", bestSellers, navController, isLandscape)
 
             Spacer(modifier = Modifier.height(if (isLandscape) 24.dp else 32.dp))
 
+            // For You products section
             ProductSection("For You", forYou, navController, isLandscape)
 
             Spacer(modifier = Modifier.height(if (isLandscape) 24.dp else 32.dp))
@@ -125,6 +133,7 @@ fun ProductSection(
 
         Spacer(modifier = Modifier.height(if (isLandscape) 12.dp else 16.dp))
 
+        // Display row differently in landscape vs portrait
         if (isLandscape) {
             Row(
                 modifier = Modifier
@@ -149,7 +158,7 @@ fun ProductSection(
     }
 }
 
-
+//Banner Section
 @Composable
 fun BannerSection(navController: NavHostController, isLandscape: Boolean) {
     Box(
@@ -159,6 +168,7 @@ fun BannerSection(navController: NavHostController, isLandscape: Boolean) {
             .padding(horizontal = 16.dp)
             .clip(RoundedCornerShape(12.dp))
     ) {
+        // Background image
         Image(
             painter = painterResource(id = R.drawable.banner),
             contentDescription = "Banner",
@@ -166,6 +176,7 @@ fun BannerSection(navController: NavHostController, isLandscape: Boolean) {
             modifier = Modifier.fillMaxSize()
         )
 
+        // Banner text and button
         Column(
             modifier = Modifier
                 .align(Alignment.CenterStart)
@@ -177,7 +188,7 @@ fun BannerSection(navController: NavHostController, isLandscape: Boolean) {
                     MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                 else
                     MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-                color = MaterialTheme.colorScheme.onPrimary
+                color = Color.White
             )
 
             Spacer(modifier = Modifier.height(if (isLandscape) 6.dp else 8.dp))
@@ -210,7 +221,7 @@ fun WrapContentRow(products: List<Product>, navController: NavHostController, is
 
     Row(
         modifier = Modifier
-            .width((totalWidth).dp)
+            .width(totalWidth.dp)
             .wrapContentHeight(),
         horizontalArrangement = Arrangement.spacedBy(spacing)
     ) {
@@ -220,7 +231,7 @@ fun WrapContentRow(products: List<Product>, navController: NavHostController, is
     }
 }
 
-
+//Product Cards
 @Composable
 fun ProductCard(product: Product, navController: NavHostController, isLandscape: Boolean) {
     val cardWidth = if (isLandscape) 160.dp else 170.dp
@@ -239,6 +250,7 @@ fun ProductCard(product: Product, navController: NavHostController, isLandscape:
         shape = RoundedCornerShape(12.dp)
     ) {
         Column {
+            // Product image
             Image(
                 painter = painterResource(id = product.imageRes),
                 contentDescription = product.name,
@@ -249,6 +261,7 @@ fun ProductCard(product: Product, navController: NavHostController, isLandscape:
                     .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
             )
 
+            // Product name and price
             Column(
                 modifier = Modifier
                     .padding(if (isLandscape) 6.dp else 12.dp)
