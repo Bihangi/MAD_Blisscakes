@@ -25,6 +25,7 @@ import com.example.blisscakes.R
 import com.example.blisscakes.navigation.NavRoutes
 import com.example.blisscakes.components.DashboardScaffold
 
+
 @Composable
 fun HomePage(navController: NavHostController) {
     val configuration = LocalConfiguration.current
