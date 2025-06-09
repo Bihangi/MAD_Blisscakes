@@ -6,7 +6,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -17,24 +16,32 @@ import com.example.blisscakes.navigation.NavRoutes
 
 @Composable
 fun BottomNavigationBar(navController: NavHostController) {
+    // Footer Icons
     val items = listOf(
         NavItem(NavRoutes.Home, R.drawable.ic_home, "Home"),
         NavItem(NavRoutes.Products, R.drawable.ic_cake, "Products"),
         NavItem(NavRoutes.Cart, R.drawable.ic_cart, "Cart"),
-        NavItem(NavRoutes.Login, R.drawable.ic_user, "Logout")
+        NavItem(NavRoutes.Login, R.drawable.ic_user, "Login")
     )
 
     val config = LocalConfiguration.current
     val isLandscape = config.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
 
+    val backgroundColor = MaterialTheme.colorScheme.surface
+    val selectedColor = MaterialTheme.colorScheme.primary
+    val unselectedColor = MaterialTheme.colorScheme.onSurfaceVariant
+    val indicatorColor = MaterialTheme.colorScheme.secondaryContainer
+    val textColor = MaterialTheme.colorScheme.onSurface
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color.White)
+            .background(backgroundColor)
             .padding(bottom = if (isLandscape) 2.dp else 4.dp)
     ) {
+        // Bottom navigation bar
         NavigationBar(
-            containerColor = Color.White,
+            containerColor = backgroundColor,
             modifier = Modifier.height(if (isLandscape) 70.dp else 80.dp)
         ) {
             items.forEach { item ->
@@ -43,6 +50,7 @@ fun BottomNavigationBar(navController: NavHostController) {
                         Icon(
                             painter = painterResource(item.iconResId),
                             contentDescription = item.label,
+                            tint = if (navController.currentDestination?.route == item.route) selectedColor else unselectedColor,
                             modifier = Modifier.size(if (isLandscape) 20.dp else 24.dp)
                         )
                     },
@@ -52,7 +60,8 @@ fun BottomNavigationBar(navController: NavHostController) {
                             style = if (isLandscape)
                                 MaterialTheme.typography.labelSmall
                             else
-                                MaterialTheme.typography.labelMedium
+                                MaterialTheme.typography.labelMedium,
+                            color = if (navController.currentDestination?.route == item.route) selectedColor else unselectedColor
                         )
                     },
                     selected = navController.currentDestination?.route == item.route,
@@ -63,25 +72,25 @@ fun BottomNavigationBar(navController: NavHostController) {
                         }
                     },
                     colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = Color(0xFFE91E63),
-                        unselectedIconColor = Color.Gray,
-                        indicatorColor = Color(0xFFFFF0F5),
-                        selectedTextColor = Color(0xFFE91E63),
-                        unselectedTextColor = Color.Gray
+                        selectedIconColor = selectedColor,
+                        unselectedIconColor = unselectedColor,
+                        indicatorColor = indicatorColor,
+                        selectedTextColor = selectedColor,
+                        unselectedTextColor = unselectedColor
                     )
                 )
             }
         }
 
-        // Copyright Footer
+        // Copyright footer
         if (!isLandscape) {
             Text(
                 text = "© 2025 BlissCakes",
                 style = MaterialTheme.typography.labelSmall,
-                color = Color.Gray,
+                color = unselectedColor,
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
-                    .padding(top = 2.dp, bottom = 2.dp)
+                    .padding(top = 2.dp, bottom = 4.dp)
             )
         }
     }
