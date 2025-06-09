@@ -1,56 +1,237 @@
 package com.example.blisscakes.pages
 
+import android.content.res.Configuration
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.blisscakes.DataClasses.CartItems
 import com.example.blisscakes.R
-import com.example.blisscakes.navigation.NavRoutes
+import com.example.blisscakes.components.BottomNavigationBar
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun CartPage(navController: NavHostController) {
-    val cartItems = listOf(
-        CartItems(1, "Chocolate Cake", 1, 800.0, R.drawable.birthday_cake1),
-        CartItems(2, "Cupcake Box", 1, 1000.0, R.drawable.bento_cake1)
-    )
+    val cartItems = remember {
+        mutableStateListOf(
+            CartItems(1, "Lemon Cake", 1, 1200.0, R.drawable.lemon),
+            CartItems(2, "Strawberry Cake", 1, 1300.0, R.drawable.strawberry)
+        )
+    }
 
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .padding(16.dp)) {
+    val deliveryFee = 500.0
+    val subtotal = cartItems.sumOf { it.price * it.quantity }
+    val total = subtotal + deliveryFee
 
-        Text("Your Cart", style = MaterialTheme.typography.headlineSmall, color = Color(0xFFE91E63))
+    val orientation = LocalConfiguration.current.orientation
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
-        LazyColumn(modifier = Modifier.weight(1f)) {
-            items(cartItems) { item ->
-                Row(Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp)) {
-                    Image(painter = painterResource(item.image), contentDescription = item.productName, modifier = Modifier.size(60.dp))
-                    Spacer(Modifier.width(16.dp))
-                    Column {
-                        Text(item.productName)
-                        Text("Qty: ${item.quantity}")
-                        Text("Price: Rs. ${item.price}")
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(top = 32.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .verticalScroll(rememberScrollState())
+                .padding(bottom = 16.dp)
+        ) {
+            Text(
+                text = "My Cart",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier
+                    .padding(vertical = 16.dp)
+                    .align(Alignment.CenterHorizontally)
+            )
+
+            Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                cartItems.forEach { item ->
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        elevation = CardDefaults.cardElevation(4.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFFFFE4E1))
+                    ) {
+                        if (orientation == Configuration.ORIENTATION_PORTRAIT) {
+                            CartItemRowPortrait(item, { delta ->
+                                item.quantity = (item.quantity + delta).coerceAtLeast(1)
+                            }, { cartItems.remove(item) })
+                        } else {
+                            CartItemRowLandscape(item, { delta ->
+                                item.quantity = (item.quantity + delta).coerceAtLeast(1)
+                            }, { cartItems.remove(item) })
+                        }
+                    }
+                }
+
+                SummarySection(subtotal, deliveryFee, total)
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    OutlinedButton(
+                        onClick = { cartItems.clear() }
+                    ) {
+                        Text("Clear Cart")
+                    }
+
+                    Button(
+                        onClick = {
+                            scope.launch {
+                                snackbarHostState.showSnackbar("Order placed successfully!")
+                                delay(1500)
+                                navController.navigate("products") {
+                                    popUpTo("cart") { inclusive = true } // Optional: clear cart from backstack
+                                }
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                    ) {
+                        Text("Checkout", color = MaterialTheme.colorScheme.onPrimary)
                     }
                 }
             }
         }
 
-        Spacer(Modifier.height(16.dp))
-        Button(
-            onClick = { navController.navigate(NavRoutes.Products) },
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE91E63)),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Checkout", color = Color.White)
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .padding(8.dp)
+        )
+
+        BottomNavigationBar(navController = navController)
+    }
+}
+
+@Composable
+fun CartItemRowPortrait(item: CartItems, onQuantityChange: (Int) -> Unit, onRemove: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Image(
+            painter = painterResource(id = item.image),
+            contentDescription = item.productName,
+            modifier = Modifier.size(100.dp)
+        )
+        Spacer(Modifier.width(12.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(item.productName, fontWeight = FontWeight.Bold)
+            Text("Rs. ${item.price}")
+            Spacer(Modifier.height(8.dp))
+            QuantityControls(item.quantity, onQuantityChange)
         }
+        IconButton(onClick = onRemove) {
+            Icon(Icons.Default.Delete, contentDescription = "Remove Item")
+        }
+    }
+}
+
+@Composable
+fun CartItemRowLandscape(item: CartItems, onQuantityChange: (Int) -> Unit, onRemove: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Image(
+            painter = painterResource(id = item.image),
+            contentDescription = item.productName,
+            modifier = Modifier.size(100.dp)
+        )
+        Spacer(Modifier.width(16.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(item.productName, fontWeight = FontWeight.Bold)
+            Text("Rs. ${item.price}")
+            Spacer(Modifier.height(4.dp))
+            QuantityControls(item.quantity, onQuantityChange)
+        }
+        IconButton(onClick = onRemove) {
+            Icon(Icons.Default.Delete, contentDescription = "Remove Item")
+        }
+    }
+}
+
+@Composable
+fun QuantityControls(quantity: Int, onQuantityChange: (Int) -> Unit) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
+    ) {
+        OutlinedButton(
+            onClick = { onQuantityChange(-1) },
+            contentPadding = PaddingValues(4.dp),
+            modifier = Modifier.size(36.dp)
+        ) {
+            Text("-", fontWeight = FontWeight.Bold)
+        }
+        Text(
+            text = quantity.toString(),
+            modifier = Modifier.padding(horizontal = 12.dp)
+        )
+        OutlinedButton(
+            onClick = { onQuantityChange(1) },
+            contentPadding = PaddingValues(4.dp),
+            modifier = Modifier.size(36.dp)
+        ) {
+            Text("+", fontWeight = FontWeight.Bold)
+        }
+    }
+}
+
+@Composable
+fun SummarySection(subtotal: Double, delivery: Double, total: Double) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 16.dp)
+    ) {
+        Text("Summary", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+        Spacer(Modifier.height(8.dp))
+        SummaryRow("Subtotal", "Rs. %.2f".format(subtotal))
+        SummaryRow("Delivery fee", "Rs. %.2f".format(delivery))
+        Divider(Modifier.padding(vertical = 6.dp))
+        SummaryRow("Total", "Rs. %.2f".format(total), isBold = true)
+    }
+}
+
+@Composable
+fun SummaryRow(label: String, amount: String, isBold: Boolean = false) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(label, fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal)
+        Text(amount, fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal)
     }
 }
