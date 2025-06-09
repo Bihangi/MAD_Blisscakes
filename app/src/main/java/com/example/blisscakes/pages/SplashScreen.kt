@@ -20,13 +20,10 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.blisscakes.R
 import com.example.blisscakes.navigation.NavRoutes
-import com.example.blisscakes.ui.theme.BlissCakesTheme
 import com.example.blisscakes.ui.theme.*
-
 
 @Composable
 fun SplashScreen(navController: NavHostController) {
-    // Get device configuration for responsive design
     val config = LocalConfiguration.current
     val isTablet = config.screenWidthDp > 600
     val isLandscape = config.orientation == Configuration.ORIENTATION_LANDSCAPE
@@ -35,8 +32,8 @@ fun SplashScreen(navController: NavHostController) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
+                // Gradient background
                 .background(
-                    // Create gradient background
                     brush = Brush.verticalGradient(
                         colors = listOf(
                             LightPink,
@@ -57,9 +54,8 @@ fun SplashScreen(navController: NavHostController) {
                     .zIndex(2f)
             )
 
-            // Adaptive layout based on Device orientation
+            // Layout adapts to orientation
             if (isLandscape) {
-                // Landscape layout
                 Row(
                     modifier = Modifier
                         .fillMaxSize()
@@ -67,12 +63,14 @@ fun SplashScreen(navController: NavHostController) {
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+
                     LeftContent(
                         isTablet,
                         navToLogin = { navController.navigate(NavRoutes.Login) },
                         navToSignup = { navController.navigate(NavRoutes.Signup) },
                         modifier = Modifier.weight(1f)
                     )
+
 
                     Box(
                         modifier = Modifier
@@ -84,12 +82,11 @@ fun SplashScreen(navController: NavHostController) {
                     }
                 }
             } else {
-                // Portrait layout
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(horizontal = 24.dp)
-                        .verticalScroll(rememberScrollState()),
+                        .verticalScroll(rememberScrollState()), // scrollable for smaller devices
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
@@ -108,7 +105,6 @@ fun SplashScreen(navController: NavHostController) {
     }
 }
 
-
 @Composable
 private fun LeftContent(
     isTablet: Boolean,
@@ -116,10 +112,13 @@ private fun LeftContent(
     navToSignup: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val isDarkTheme = isSystemInDarkTheme()
+
     Column(
         modifier = modifier.fillMaxWidth(if (isTablet) 0.7f else 0.9f),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+
         Text(
             text = "Yummy sweets delivered to your dining table!",
             fontSize = if (isTablet) 36.sp else 26.sp,
@@ -143,41 +142,43 @@ private fun LeftContent(
 
         Spacer(modifier = Modifier.height(32.dp))
 
+        // Buttons
         Row(
             horizontalArrangement = Arrangement.spacedBy(20.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // LOGIN button
             OutlinedButton(
                 onClick = navToLogin,
                 colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = MaterialTheme.colorScheme.primary
+                    contentColor = if (isDarkTheme) TextLight else PinkPrimary
                 ),
                 border = BorderStroke(
                     width = 2.dp,
-                    color = MaterialTheme.colorScheme.primary
+                    color = if (isDarkTheme) TextLight else PinkPrimary
                 ),
                 modifier = Modifier.width(140.dp)
             ) {
                 Text("LOGIN", fontWeight = FontWeight.SemiBold)
             }
 
+            // SIGNUP button
             Button(
                 onClick = navToSignup,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary
+                    containerColor = PinkPrimary,
+                    contentColor = White
                 ),
                 modifier = Modifier.width(140.dp)
             ) {
                 Text(
                     "SIGNUP",
-                    color = MaterialTheme.colorScheme.onPrimary,
                     fontWeight = FontWeight.SemiBold
                 )
             }
         }
     }
 }
-
 
 @Composable
 private fun ImageSection() {
@@ -187,6 +188,7 @@ private fun ImageSection() {
             .padding(horizontal = 16.dp),
         contentAlignment = Alignment.Center
     ) {
+        // Landing image
         Image(
             painter = painterResource(id = R.drawable.landing_image),
             contentDescription = "Wedding Image",
