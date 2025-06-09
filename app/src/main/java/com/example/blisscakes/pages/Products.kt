@@ -12,6 +12,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
@@ -25,7 +26,6 @@ import com.example.blisscakes.navigation.NavRoutes
 import com.example.blisscakes.ui.theme.*
 import com.example.blisscakes.components.DashboardScaffold
 import com.google.accompanist.flowlayout.FlowRow
-import androidx.compose.ui.graphics.Color
 
 @Composable
 fun Products(navController: NavHostController) {
@@ -33,7 +33,9 @@ fun Products(navController: NavHostController) {
     val isLandscape = config.orientation == Configuration.ORIENTATION_LANDSCAPE
     val isTablet = config.screenWidthDp > 600
 
-    // Static list of products
+    val isDarkTheme = isSystemInDarkTheme()
+
+    // Sample product list
     val cakeProducts = remember {
         listOf(
             Product(1, "Carrot Cake", 1600.0, "Moist carrot cake with cream cheese frosting", R.drawable.carrot, "Classic"),
@@ -49,9 +51,11 @@ fun Products(navController: NavHostController) {
         )
     }
 
+
     var selectedFilters by remember { mutableStateOf(setOf<String>()) }
     var searchQuery by remember { mutableStateOf("") }
 
+    // Filter products based on selected categories
     val filteredProducts = remember(selectedFilters, searchQuery, cakeProducts) {
         cakeProducts.filter {
             (selectedFilters.isEmpty() || selectedFilters.contains(it.category)) &&
@@ -59,7 +63,6 @@ fun Products(navController: NavHostController) {
         }
     }
 
-    // Bottom nav and content padding
     DashboardScaffold(navController = navController) { innerPadding ->
         Column(
             modifier = Modifier
@@ -68,8 +71,8 @@ fun Products(navController: NavHostController) {
                 .background(
                     Brush.verticalGradient(
                         listOf(
-                            LightPink,
-                            MaterialTheme.colorScheme.background
+                            if (isDarkTheme) Color(0xFFB0B0B0) else LightPink,
+                            if (isDarkTheme) Color(0xFF121212) else MaterialTheme.colorScheme.background
                         )
                     )
                 )
@@ -80,7 +83,7 @@ fun Products(navController: NavHostController) {
         ) {
             HeaderBar(navController, isLandscape)
             SearchBar(searchQuery) { searchQuery = it }
-            HeaderSection(isLandscape)
+            HeaderSection(isLandscape, isDarkTheme)
             FilterSection(selectedFilters, { filter ->
                 selectedFilters = if (selectedFilters.contains(filter))
                     selectedFilters - filter else selectedFilters + filter
@@ -90,6 +93,7 @@ fun Products(navController: NavHostController) {
                 isTablet = isTablet,
                 isLandscape = isLandscape
             ) { product ->
+                // Navigate to product detail page
                 navController.navigate("detail/${product.id}/${product.name}/${product.price}/${product.description}")
             }
         }
@@ -98,13 +102,13 @@ fun Products(navController: NavHostController) {
 
 @Composable
 private fun HeaderBar(navController: NavHostController, isLandscape: Boolean) {
-    // Profile icon
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
         horizontalArrangement = Arrangement.End
     ) {
+        // Profile icon that navigates to login page
         IconButton(
             onClick = { navController.navigate(NavRoutes.Login) },
             modifier = Modifier.size(if (isLandscape) 40.dp else 48.dp)
@@ -121,7 +125,7 @@ private fun HeaderBar(navController: NavHostController, isLandscape: Boolean) {
 
 @Composable
 private fun SearchBar(query: String, onQueryChange: (String) -> Unit) {
-    // Search bar
+    // Search input field
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -139,14 +143,16 @@ private fun SearchBar(query: String, onQueryChange: (String) -> Unit) {
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
                 unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                cursorColor = MaterialTheme.colorScheme.primary
+                cursorColor = MaterialTheme.colorScheme.primary,
+                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface
             )
         )
     }
 }
 
 @Composable
-private fun HeaderSection(isLandscape: Boolean) {
+private fun HeaderSection(isLandscape: Boolean, isDarkTheme: Boolean) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
@@ -157,18 +163,21 @@ private fun HeaderSection(isLandscape: Boolean) {
             "Cakes",
             fontSize = if (isLandscape) 34.sp else 32.sp,
             fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
+            color = MaterialTheme.colorScheme.onBackground
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
             "Baked with love, just like home. Our cakes bring the warmth of homemade goodness.",
             textAlign = TextAlign.Center,
             fontSize = if (isLandscape) 18.sp else 16.sp,
+            color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.padding(horizontal = 24.dp)
         )
     }
 }
 
+//Filter Section
 @Composable
 private fun FilterSection(
     selectedFilters: Set<String>,
@@ -176,8 +185,8 @@ private fun FilterSection(
     isLandscape: Boolean
 ) {
     val filters = listOf("Theme", "Classic", "Mini", "Desserts")
-    val isDarkTheme = isSystemInDarkTheme()
 
+    // Filter category section
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -208,8 +217,8 @@ private fun FilterSection(
                     selected = selectedFilters.contains(filter),
                     colors = FilterChipDefaults.filterChipColors(
                         selectedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
-                        labelColor = if (isDarkTheme) Color.White else MaterialTheme.colorScheme.onSurface,
-                        selectedLabelColor = if (isDarkTheme) Color.White else MaterialTheme.colorScheme.primary
+                        labelColor = MaterialTheme.colorScheme.onSurface,
+                        selectedLabelColor = MaterialTheme.colorScheme.primary
                     )
                 )
             }
@@ -217,6 +226,7 @@ private fun FilterSection(
     }
 }
 
+//Product Grid
 @Composable
 private fun ProductGrid(
     products: List<Product>,
@@ -248,9 +258,9 @@ private fun ProductGrid(
     }
 }
 
+//Product Card
 @Composable
 internal fun ProductCard(product: Product, onClick: () -> Unit) {
-    // Card representing a single product
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -269,7 +279,7 @@ internal fun ProductCard(product: Product, onClick: () -> Unit) {
                 contentScale = ContentScale.Crop
             )
             Spacer(modifier = Modifier.height(8.dp))
-            Text(product.name, fontWeight = FontWeight.Bold)
+            Text(product.name, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
             Text("Rs. %.2f".format(product.price), color = MaterialTheme.colorScheme.primary)
         }
     }
