@@ -1,51 +1,51 @@
 package com.example.blisscakes.pages
 
-import android.annotation.SuppressLint
 import android.content.res.Configuration
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.grid.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.ui.*
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.*
 import androidx.navigation.NavHostController
 import com.example.blisscakes.DataClasses.Product
 import com.example.blisscakes.R
 import com.example.blisscakes.navigation.NavRoutes
 import com.example.blisscakes.ui.theme.*
-
+import com.example.blisscakes.components.DashboardScaffold
+import com.google.accompanist.flowlayout.FlowRow
+import androidx.compose.ui.graphics.Color
 
 @Composable
 fun Products(navController: NavHostController) {
     val config = LocalConfiguration.current
-    val isTablet = config.screenWidthDp > 600
     val isLandscape = config.orientation == Configuration.ORIENTATION_LANDSCAPE
+    val isTablet = config.screenWidthDp > 600
 
+    // Static list of products
     val cakeProducts = remember {
         listOf(
-            Product(1, "Carrot Cake", 1600.0, "Moist carrot cake with cream cheese frosting", R.drawable.birthday_cake1, "Classic Cakes"),
-            Product(2, "Chocolate Cake", 1300.0, "Rich chocolate cake with dark chocolate ganache", R.drawable.birthday_cake1, "Classic Cakes"),
-            Product(3, "Strawberry Cake", 1300.0, "Fresh strawberry cake with whipped cream", R.drawable.birthday_cake1, "Theme Cakes"),
-            Product(4, "Butter Cake", 1050.0, "Classic butter cake with vanilla frosting", R.drawable.birthday_cake1, "Classic Cakes"),
-            Product(5, "Lemon Cake", 1200.0, "Zesty lemon cake with lemon glaze", R.drawable.lemon, "Classic Cakes"),
-            Product(6, "Orange Cake", 1450.0, "Citrus orange cake with orange buttercream", R.drawable.birthday_cake1, "Classic Cakes")
+            Product(1, "Carrot Cake", 1600.0, "Moist carrot cake with cream cheese frosting", R.drawable.carrot, "Classic"),
+            Product(2, "Chocolate Cake", 1300.0, "Rich chocolate cake with dark chocolate ganache", R.drawable.chocolate, "Classic"),
+            Product(3, "Strawberry Cake", 1300.0, "Fresh strawberry cake with whipped cream", R.drawable.strawberry, "Classic"),
+            Product(4, "Butter Cake", 1050.0, "Classic butter cake with vanilla frosting", R.drawable.butter_cake, "Classic"),
+            Product(5, "Lemon Cake", 1200.0, "Zesty lemon cake with lemon glaze", R.drawable.lemon, "Classic"),
+            Product(6, "Birthday Cake", 5450.0, "2 tier cake with vanilla frosting", R.drawable.birthday_cake1, "Theme"),
+            Product(7, "Nutella Brownies", 850.0, "Sweet chocolate brownies with Nutella", R.drawable.nutella_brownies, "Desserts"),
+            Product(8, "Eclairs", 1250.0, "Freshly baked Eclairs", R.drawable.eclairs, "Desserts"),
+            Product(9, "Make a Wish", 2850.0, "A bento cake covered in buttercream frosting", R.drawable.bento_cake3, "Mini"),
+            Product(10, "Ocean Whispers", 2850.0, "A bento cake with a colorful ocean theme", R.drawable.bento_cake2, "Mini")
         )
     }
 
@@ -59,75 +59,73 @@ fun Products(navController: NavHostController) {
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Brush.verticalGradient(listOf(LightPink, MaterialTheme.colorScheme.background)))
-    ) {
-        // Header with logo & profile
-        HeaderBar(navController)
-
-        // Search Bar
-        SearchBar(searchQuery) { searchQuery = it }
-
-        // Content
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            item { HeaderSection() }
-            item {
-                FilterSection(selectedFilters) { filter ->
-                    selectedFilters = if (selectedFilters.contains(filter))
-                        selectedFilters - filter else selectedFilters + filter
-                }
-            }
-            item {
-                ProductGrid(
-                    products = filteredProducts,
-                    isTablet = isTablet,
-                    isLandscape = isLandscape,
-                    onProductClick = { product ->
-                        navController.navigate("detail/${product.id}/${product.name}/${product.price}/${product.description}")
-                    }
+    // Bottom nav and content padding
+    DashboardScaffold(navController = navController) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .background(
+                    Brush.verticalGradient(
+                        listOf(
+                            LightPink,
+                            MaterialTheme.colorScheme.background
+                        )
+                    )
                 )
+                .padding(
+                    top = innerPadding.calculateTopPadding() + 16.dp,
+                    bottom = innerPadding.calculateBottomPadding() + 16.dp
+                )
+        ) {
+            HeaderBar(navController, isLandscape)
+            SearchBar(searchQuery) { searchQuery = it }
+            HeaderSection(isLandscape)
+            FilterSection(selectedFilters, { filter ->
+                selectedFilters = if (selectedFilters.contains(filter))
+                    selectedFilters - filter else selectedFilters + filter
+            }, isLandscape)
+            ProductGrid(
+                products = filteredProducts,
+                isTablet = isTablet,
+                isLandscape = isLandscape
+            ) { product ->
+                navController.navigate("detail/${product.id}/${product.name}/${product.price}/${product.description}")
             }
         }
     }
 }
 
 @Composable
-private fun HeaderBar(navController: NavHostController) {
-    Box(
+private fun HeaderBar(navController: NavHostController, isLandscape: Boolean) {
+    // Profile icon
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(SoftPink.copy(alpha = 0.7f))
-            .padding(horizontal = 16.dp, vertical = 12.dp)
+            .padding(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.End
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.align(Alignment.CenterStart)) {
-            Image(
-                painter = painterResource(id = R.drawable.app_logo),
-                contentDescription = "Logo",
-                modifier = Modifier.size(40.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text("BLISS CAKE", fontSize = 18.sp, fontWeight = FontWeight.Bold)
-        }
-
         IconButton(
             onClick = { navController.navigate(NavRoutes.Login) },
-            modifier = Modifier.align(Alignment.CenterEnd)
+            modifier = Modifier.size(if (isLandscape) 40.dp else 48.dp)
         ) {
-            Icon(Icons.Default.Person, contentDescription = "Profile")
+            Icon(
+                imageVector = Icons.Default.Person,
+                contentDescription = "Profile",
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(if (isLandscape) 28.dp else 32.dp)
+            )
         }
     }
 }
 
 @Composable
 private fun SearchBar(query: String, onQueryChange: (String) -> Unit) {
+    // Search bar
     Card(
-        modifier = Modifier.fillMaxWidth().padding(16.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
         shape = RoundedCornerShape(25.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
@@ -138,20 +136,35 @@ private fun SearchBar(query: String, onQueryChange: (String) -> Unit) {
             leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(25.dp),
-            colors = OutlinedTextFieldDefaults.colors()
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                cursorColor = MaterialTheme.colorScheme.primary
+            )
         )
     }
 }
 
 @Composable
-private fun HeaderSection() {
-    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(vertical = 16.dp)) {
-        Text("Cakes", fontSize = 32.sp, fontWeight = FontWeight.Bold)
-        Spacer(modifier = Modifier.height(12.dp))
+private fun HeaderSection(isLandscape: Boolean) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = if (isLandscape) 12.dp else 16.dp)
+    ) {
+        Text(
+            "Cakes",
+            fontSize = if (isLandscape) 34.sp else 32.sp,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center
+        )
+        Spacer(modifier = Modifier.height(8.dp))
         Text(
             "Baked with love, just like home. Our cakes bring the warmth of homemade goodness.",
             textAlign = TextAlign.Center,
-            fontSize = 16.sp
+            fontSize = if (isLandscape) 18.sp else 16.sp,
+            modifier = Modifier.padding(horizontal = 24.dp)
         )
     }
 }
@@ -159,18 +172,45 @@ private fun HeaderSection() {
 @Composable
 private fun FilterSection(
     selectedFilters: Set<String>,
-    onFilterChange: (String) -> Unit
+    onFilterChange: (String) -> Unit,
+    isLandscape: Boolean
 ) {
-    val filters = listOf("Theme Cakes", "Classic Cakes", "Mini Cakes", "Desserts")
+    val filters = listOf("Theme", "Classic", "Mini", "Desserts")
+    val isDarkTheme = isSystemInDarkTheme()
 
-    Column {
-        Text("FILTER BY", fontSize = 14.sp, fontWeight = FontWeight.Bold)
-        LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            items(filters) { filter ->
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            "FILTER BY",
+            fontSize = if (isLandscape) 16.sp else 14.sp,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier
+                .horizontalScroll(rememberScrollState())
+                .padding(vertical = 8.dp)
+        ) {
+            filters.forEach { filter ->
                 FilterChip(
                     onClick = { onFilterChange(filter) },
-                    label = { Text(filter, fontSize = 12.sp) },
-                    selected = selectedFilters.contains(filter)
+                    label = {
+                        Text(
+                            filter,
+                            fontSize = if (isLandscape) 14.sp else 12.sp
+                        )
+                    },
+                    selected = selectedFilters.contains(filter),
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                        labelColor = if (isDarkTheme) Color.White else MaterialTheme.colorScheme.onSurface,
+                        selectedLabelColor = if (isDarkTheme) Color.White else MaterialTheme.colorScheme.primary
+                    )
                 )
             }
         }
@@ -190,28 +230,33 @@ private fun ProductGrid(
         else -> 2
     }
 
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(columns),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-        modifier = Modifier.height(((products.size / columns + 1) * 280).dp)
+    FlowRow(
+        mainAxisSpacing = 16.dp,
+        crossAxisSpacing = 16.dp,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
-        items(products) { product ->
-            ProductCard(product, onClick = { onProductClick(product) })
+        products.forEach { product ->
+            Box(
+                modifier = Modifier
+                    .widthIn(min = 0.dp, max = (LocalConfiguration.current.screenWidthDp.dp / columns) - 24.dp)
+            ) {
+                ProductCard(product, onClick = { onProductClick(product) })
+            }
         }
     }
 }
 
-@SuppressLint("DefaultLocale")
 @Composable
-private fun ProductCard(product: Product, onClick: () -> Unit) {
+internal fun ProductCard(product: Product, onClick: () -> Unit) {
+    // Card representing a single product
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() }
-            .shadow(8.dp, RoundedCornerShape(16.dp)),
+            .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = SoftPink.copy(alpha = 0.3f))
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Column(modifier = Modifier.padding(12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             Image(
