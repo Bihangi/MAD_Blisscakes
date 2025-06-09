@@ -18,8 +18,8 @@ import com.example.blisscakes.navigation.NavRoutes
 @Composable
 fun CartPage(navController: NavHostController) {
     val cartItems = listOf(
-        CartItems(1, "Chocolate Cake", 1, 800.0, R.drawable.cart1),
-        CartItems(2, "Cupcake Box", 1, 1000.0, R.drawable.cart3)
+        CartItems(1, "Chocolate Cake", 1, 800.0, R.drawable.birthday_cake1),
+        CartItems(2, "Cupcake Box", 1, 1000.0, R.drawable.bento_cake1)
     )
 
     Column(modifier = Modifier
@@ -46,7 +46,7 @@ fun CartPage(navController: NavHostController) {
 
         Spacer(Modifier.height(16.dp))
         Button(
-            onClick = { navController.navigate(NavRoutes.Summary) },
+            onClick = { navController.navigate(NavRoutes.Products) },
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE91E63)),
             modifier = Modifier.fillMaxWidth()
         ) {
