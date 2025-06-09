@@ -19,7 +19,7 @@ import com.example.blisscakes.navigation.NavRoutes
 fun BottomNavigationBar(navController: NavHostController) {
     val items = listOf(
         NavItem(NavRoutes.Home, R.drawable.ic_home, "Home"),
-        NavItem(NavRoutes.Products, R.drawable.ic_cake, "Cakes"),
+        NavItem(NavRoutes.Products, R.drawable.ic_cake, "Products"),
         NavItem(NavRoutes.Cart, R.drawable.ic_cart, "Cart"),
         NavItem(NavRoutes.Login, R.drawable.ic_user, "Logout")
     )
