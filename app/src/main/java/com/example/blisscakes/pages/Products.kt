@@ -170,7 +170,7 @@ private fun HeaderSection(isLandscape: Boolean, isDarkTheme: Boolean) {
         Text(
             "Baked with love, just like home. Our cakes bring the warmth of homemade goodness.",
             textAlign = TextAlign.Center,
-            fontSize = if (isLandscape) 18.sp else 16.sp,
+            fontSize = if (isLandscape) 18.sp else 17.sp,
             color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.padding(horizontal = 24.dp)
         )
