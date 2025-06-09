@@ -27,6 +27,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun CartPage(navController: NavHostController) {
+    // Sample cart items
     val cartItems = remember {
         mutableStateListOf(
             CartItems(1, "Lemon Cake", 1, 1200.0, R.drawable.lemon),
@@ -35,10 +36,12 @@ fun CartPage(navController: NavHostController) {
     }
 
     val deliveryFee = 500.0
+
+    // Calculate subtotal and total amount including delivery fee
     val subtotal = cartItems.sumOf { it.price * it.quantity }
     val total = subtotal + deliveryFee
-
     val orientation = LocalConfiguration.current.orientation
+
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
@@ -58,12 +61,14 @@ fun CartPage(navController: NavHostController) {
                 text = "My Cart",
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
+                color = Color.White,
                 modifier = Modifier
                     .padding(vertical = 16.dp)
                     .align(Alignment.CenterHorizontally)
             )
 
             Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                // Display each cart item in a card
                 cartItems.forEach { item ->
                     Card(
                         modifier = Modifier
@@ -73,6 +78,7 @@ fun CartPage(navController: NavHostController) {
                         elevation = CardDefaults.cardElevation(4.dp),
                         colors = CardDefaults.cardColors(containerColor = Color(0xFFFFE4E1))
                     ) {
+                        // Use different layouts based on orientation
                         if (orientation == Configuration.ORIENTATION_PORTRAIT) {
                             CartItemRowPortrait(item, { delta ->
                                 item.quantity = (item.quantity + delta).coerceAtLeast(1)
@@ -85,8 +91,10 @@ fun CartPage(navController: NavHostController) {
                     }
                 }
 
+                // Show order summary
                 SummarySection(subtotal, deliveryFee, total)
 
+                // Buttons for clearing cart and proceeding to checkout
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -105,7 +113,7 @@ fun CartPage(navController: NavHostController) {
                                 snackbarHostState.showSnackbar("Order placed successfully!")
                                 delay(1500)
                                 navController.navigate("products") {
-                                    popUpTo("cart") { inclusive = true } // Optional: clear cart from backstack
+                                    popUpTo("cart") { inclusive = true } // Clear cart page from backstack
                                 }
                             }
                         },
@@ -124,6 +132,7 @@ fun CartPage(navController: NavHostController) {
                 .padding(8.dp)
         )
 
+        // Bottom navigation bar of the app
         BottomNavigationBar(navController = navController)
     }
 }
@@ -180,6 +189,7 @@ fun CartItemRowLandscape(item: CartItems, onQuantityChange: (Int) -> Unit, onRem
     }
 }
 
+// Controls for incrementing/decrementing quantity
 @Composable
 fun QuantityControls(quantity: Int, onQuantityChange: (Int) -> Unit) {
     Row(
@@ -207,6 +217,7 @@ fun QuantityControls(quantity: Int, onQuantityChange: (Int) -> Unit) {
     }
 }
 
+// Summary section showing subtotal, delivery fee and total
 @Composable
 fun SummarySection(subtotal: Double, delivery: Double, total: Double) {
     Column(
@@ -214,8 +225,14 @@ fun SummarySection(subtotal: Double, delivery: Double, total: Double) {
             .fillMaxWidth()
             .padding(vertical = 16.dp)
     ) {
-        Text("Summary", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+        Text(
+            "Summary",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            color = Color.White
+        )
         Spacer(Modifier.height(8.dp))
+
         SummaryRow("Subtotal", "Rs. %.2f".format(subtotal))
         SummaryRow("Delivery fee", "Rs. %.2f".format(delivery))
         Divider(Modifier.padding(vertical = 6.dp))
@@ -231,7 +248,15 @@ fun SummaryRow(label: String, amount: String, isBold: Boolean = false) {
             .padding(vertical = 4.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(label, fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal)
-        Text(amount, fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal)
+        Text(
+            label,
+            fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal,
+            color = Color.White
+        )
+        Text(
+            amount,
+            fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal,
+            color = Color.White
+        )
     }
 }
