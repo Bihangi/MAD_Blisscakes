@@ -3,6 +3,7 @@ package com.example.blisscakes.pages
 import android.content.res.Configuration
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -18,6 +19,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import com.example.blisscakes.DataClasses.CartItems
 import com.example.blisscakes.R
@@ -27,7 +29,6 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun CartPage(navController: NavHostController) {
-    // Sample cart items
     val cartItems = remember {
         mutableStateListOf(
             CartItems(1, "Lemon Cake", 1, 1200.0, R.drawable.lemon),
@@ -36,14 +37,14 @@ fun CartPage(navController: NavHostController) {
     }
 
     val deliveryFee = 500.0
-
-    // Calculate subtotal and total amount including delivery fee
     val subtotal = cartItems.sumOf { it.price * it.quantity }
     val total = subtotal + deliveryFee
     val orientation = LocalConfiguration.current.orientation
-
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+
+    val isDarkTheme = isSystemInDarkTheme()
+    val titleColor = if (isDarkTheme) Color.White else MaterialTheme.colorScheme.onBackground
 
     Column(
         modifier = Modifier
@@ -61,14 +62,13 @@ fun CartPage(navController: NavHostController) {
                 text = "My Cart",
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
-                color = Color.White,
+                color = titleColor,
                 modifier = Modifier
                     .padding(vertical = 16.dp)
                     .align(Alignment.CenterHorizontally)
             )
 
             Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                // Display each cart item in a card
                 cartItems.forEach { item ->
                     Card(
                         modifier = Modifier
@@ -78,7 +78,6 @@ fun CartPage(navController: NavHostController) {
                         elevation = CardDefaults.cardElevation(4.dp),
                         colors = CardDefaults.cardColors(containerColor = Color(0xFFFFE4E1))
                     ) {
-                        // Use different layouts based on orientation
                         if (orientation == Configuration.ORIENTATION_PORTRAIT) {
                             CartItemRowPortrait(item, { delta ->
                                 item.quantity = (item.quantity + delta).coerceAtLeast(1)
@@ -91,10 +90,8 @@ fun CartPage(navController: NavHostController) {
                     }
                 }
 
-                // Show order summary
                 SummarySection(subtotal, deliveryFee, total)
 
-                // Buttons for clearing cart and proceeding to checkout
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -113,7 +110,7 @@ fun CartPage(navController: NavHostController) {
                                 snackbarHostState.showSnackbar("Order placed successfully!")
                                 delay(1500)
                                 navController.navigate("products") {
-                                    popUpTo("cart") { inclusive = true } // Clear cart page from backstack
+                                    popUpTo("cart") { inclusive = true }
                                 }
                             }
                         },
@@ -132,7 +129,6 @@ fun CartPage(navController: NavHostController) {
                 .padding(8.dp)
         )
 
-        // Bottom navigation bar of the app
         BottomNavigationBar(navController = navController)
     }
 }
@@ -189,7 +185,6 @@ fun CartItemRowLandscape(item: CartItems, onQuantityChange: (Int) -> Unit, onRem
     }
 }
 
-// Controls for incrementing/decrementing quantity
 @Composable
 fun QuantityControls(quantity: Int, onQuantityChange: (Int) -> Unit) {
     Row(
@@ -217,9 +212,11 @@ fun QuantityControls(quantity: Int, onQuantityChange: (Int) -> Unit) {
     }
 }
 
-// Summary section showing subtotal, delivery fee and total
 @Composable
 fun SummarySection(subtotal: Double, delivery: Double, total: Double) {
+    val isDarkTheme = isSystemInDarkTheme()
+    val textColor = if (isDarkTheme) Color.White else MaterialTheme.colorScheme.onBackground
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -229,19 +226,19 @@ fun SummarySection(subtotal: Double, delivery: Double, total: Double) {
             "Summary",
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
-            color = Color.White
+            color = textColor
         )
         Spacer(Modifier.height(8.dp))
 
-        SummaryRow("Subtotal", "Rs. %.2f".format(subtotal))
-        SummaryRow("Delivery fee", "Rs. %.2f".format(delivery))
+        SummaryRow("Subtotal", "Rs. %.2f".format(subtotal), textColor)
+        SummaryRow("Delivery fee", "Rs. %.2f".format(delivery), textColor)
         Divider(Modifier.padding(vertical = 6.dp))
-        SummaryRow("Total", "Rs. %.2f".format(total), isBold = true)
+        SummaryRow("Total", "Rs. %.2f".format(total), textColor, isBold = true)
     }
 }
 
 @Composable
-fun SummaryRow(label: String, amount: String, isBold: Boolean = false) {
+fun SummaryRow(label: String, amount: String, color: Color, isBold: Boolean = false) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -251,12 +248,12 @@ fun SummaryRow(label: String, amount: String, isBold: Boolean = false) {
         Text(
             label,
             fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal,
-            color = Color.White
+            color = color
         )
         Text(
             amount,
             fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal,
-            color = Color.White
+            color = color
         )
     }
 }
